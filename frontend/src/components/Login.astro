@@ -1,0 +1,35 @@
+---
+import Modal from "./Modal.astro";
+import "@styles/form.sass";
+---
+
+<Modal name="login" title="Login">
+  <form class="form login-form">
+    <div class="input-group">
+      <input type="email" id="email" name="email" placeholder="Email" />
+    </div>
+    <div class="input-group">
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+      />
+    </div>
+    <button type="submit" class="primary button">Login</button>
+  </form>
+</Modal>
+
+<style lang="sass">
+  .login-form .primary.button
+    margin: var(--space-l) auto 0
+</style>
+
+<script>
+  import { handleFormSubmit } from "@scripts/utils/form";
+  document
+    .querySelector(".login-form")
+    ?.addEventListener("submit", (e: SubmitEvent) => {
+      handleFormSubmit(e, "Login");
+    });
+</script>

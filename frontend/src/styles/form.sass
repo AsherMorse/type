@@ -1,0 +1,27 @@
+// Common form styles
+.form
+    display: flex
+    flex-direction: column
+    gap: var(--space-l)
+    width: 100%
+    max-width: 320px
+    margin: 0 auto
+
+    .input-group input
+        width: 100%
+        padding: var(--space-m) 0
+        font-family: var(--font-main)
+        font-size: var(--font-size-s)
+        color: var(--color-main)
+        background: transparent
+        border: none
+        border-bottom: 1px solid var(--color-main-15)
+        transition: border-color var(--transition-s)
+
+        &::placeholder
+            color: var(--color-main-25)
+            font-size: var(--font-size-xs)
+
+        &:focus
+            outline: none
+            border-color: var(--color-main-50) 
