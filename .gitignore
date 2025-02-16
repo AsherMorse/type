@@ -21,7 +21,6 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-
-
-# vscode setting folder
+# other
 project.txt
+appwrite.json
