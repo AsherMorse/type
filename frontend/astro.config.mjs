@@ -23,23 +23,15 @@ export default defineConfig({
   },
 
   redirects: {
-    // Home page
-    '/hi': '/hello',
-    '/good-morning': '/hello',
-    '/good-afternoon': '/hello',
-    '/good-evening': '/hello',
-    '/about': '/hello',
-    '/welcome': '/hello',
-
     // Example note
     '/example': '/note/example',
 
     // External redirects
-    '/git': 'https://github.com/qurle/type'
+    '/git': 'https://github.com/ashermorse/type'
 
   },
 
   devToolbar: {
-    enabled: false
+    enabled: true
   },
 });
