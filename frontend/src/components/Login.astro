@@ -8,7 +8,7 @@ import "@styles/form.sass";
     <div class="input-group">
       <input
         type="email"
-        id="email"
+        id="login-email"
         name="email"
         placeholder="Email"
         required
@@ -19,7 +19,7 @@ import "@styles/form.sass";
     <div class="input-group">
       <input
         type="password"
-        id="password"
+        id="login-password"
         name="password"
         placeholder="Password"
         required
@@ -75,8 +75,10 @@ import "@styles/form.sass";
   import MicroModal from "micromodal";
 
   const form = document.querySelector(".login-form") as HTMLFormElement;
-  const emailInput = form.querySelector("#email") as HTMLInputElement;
-  const passwordInput = form.querySelector("#password") as HTMLInputElement;
+  const emailInput = form.querySelector("#login-email") as HTMLInputElement;
+  const passwordInput = form.querySelector(
+    "#login-password",
+  ) as HTMLInputElement;
   const submitButton = form.querySelector(
     "button[type=submit]",
   ) as HTMLButtonElement;
@@ -87,6 +89,20 @@ import "@styles/form.sass";
   const buttonText = submitButton.querySelector(
     ".button-text",
   ) as HTMLSpanElement;
+
+  let previousActiveElement: HTMLElement | null = null;
+
+  document.addEventListener("modal-login-show", () => {
+    previousActiveElement = document.activeElement as HTMLElement;
+    emailInput.focus();
+  });
+
+  document.addEventListener("modal-login-close", () => {
+    resetForm();
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+    }
+  });
 
   const showError = (element: HTMLElement, message: string) => {
     const errorElement = element.parentElement?.querySelector(".error-message");
@@ -127,20 +143,24 @@ import "@styles/form.sass";
     // Validate email
     if (!email) {
       showError(emailInput, "Email is required");
+      emailInput.focus();
       return;
     }
     if (!emailInput.validity.valid) {
       showError(emailInput, "Please enter a valid email address");
+      emailInput.focus();
       return;
     }
 
     // Validate password
     if (!password) {
       showError(passwordInput, "Password is required");
+      passwordInput.focus();
       return;
     }
     if (password.length < 8) {
       showError(passwordInput, "Password must be at least 8 characters");
+      passwordInput.focus();
       return;
     }
 
@@ -153,7 +173,6 @@ import "@styles/form.sass";
         setAuthState(user, session?.$id);
         showStatus("Logged in successfully");
         MicroModal.close("modal-login");
-        resetForm();
       } else {
         throw new Error("Failed to get user information");
       }
@@ -162,6 +181,7 @@ import "@styles/form.sass";
         error.message || "Login failed. Please try again.";
       formError.classList.add("show");
       setLoading(false);
+      emailInput.focus();
     }
   });
 </script>
