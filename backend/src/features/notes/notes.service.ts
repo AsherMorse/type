@@ -43,11 +43,24 @@ export class NotesService {
 
   static async createNote(data: { content: string; userId: string }): Promise<Note> {
     console.log('Creating note for user:', data.userId);
-    return {
-      id: 'stub-id',
-      content: data.content,
-      userId: data.userId
-    };
+    try {
+      const document = {
+        content: data.content,
+        userId: data.userId,
+        lastModified: new Date().toISOString()
+      };
+      console.log('Creating document:', document);
+      const note = await db.create(DB.collections.notes, document);
+
+      return {
+        id: note.$id,
+        content: note.content,
+        userId: note.userId
+      };
+    } catch (error) {
+      console.error('Error creating note:', error);
+      throw error;
+    }
   }
 
   static async updateNote(noteId: string, data: Partial<Note>, userId: string): Promise<Note | null> {
