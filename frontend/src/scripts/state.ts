@@ -6,6 +6,8 @@ import { getOpfs } from '@scripts/storage/getOpfs';
 import { getNotes } from '@scripts/storage/getNotes';
 import { getByTag } from '@scripts/utils/getElements';
 import { getEditorVersion } from '@scripts/utils/getEditorVersion';
+import { auth } from '@scripts/appwrite/auth';
+import { storage } from '@scripts/appwrite/storage';
 
 export const state = {
   // Editor
@@ -31,6 +33,42 @@ export const state = {
   currentUser: null as Models.User<Models.Preferences> | null,	// Current user data
 }
 
+// Auth state management
+export const setAuthState = (user: Models.User<Models.Preferences>, token?: string) => {
+  state.currentUser = user;
+  state.isAuthenticated = true;
+  if (token) {
+    storage.saveAuthToken(token);
+  }
+  // Broadcast state change
+  window.dispatchEvent(new CustomEvent('auth-state-change'));
+};
+
+export const clearAuthState = () => {
+  state.currentUser = null;
+  state.isAuthenticated = false;
+  storage.removeAuthToken();
+  storage.removeTempData();
+  // Broadcast state change
+  window.dispatchEvent(new CustomEvent('auth-state-change'));
+};
+
+export const updateUserState = async () => {
+  try {
+    const user = await auth.getCurrentUser();
+    if (user) {
+      const token = storage.getAuthToken();
+      setAuthState(user, token);
+      return true;
+    }
+    clearAuthState();
+    return false;
+  } catch {
+    clearAuthState();
+    return false;
+  }
+};
+
 export async function initState() {
   state.locked = false
   state.empty = true
@@ -42,4 +80,7 @@ export async function initState() {
   state.hasNotes = state.notes?.length > 0
 
   state.mainEl = getByTag('main')
+
+  // Check initial auth state
+  await updateUserState()
 }
