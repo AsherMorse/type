@@ -1,17 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { Client, Account } from 'appwrite';
+import { Account } from 'appwrite';
+import { client } from '../../utils/client';
 
-// Initialize Appwrite client
-const client = new Client()
-  .setEndpoint(process.env.APPWRITE_ENDPOINT || 'https://appwrite.ashermorse.dev/v1')
-  .setProject(process.env.APPWRITE_PROJECT_ID || 'type');
-
-// Log client configuration
-console.log('Appwrite client config:', {
-  endpoint: client.config.endpoint,
-  project: client.config.project
-});
-
+// Initialize account service
 const account = new Account(client);
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
