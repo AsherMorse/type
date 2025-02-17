@@ -3,7 +3,7 @@ import { databases } from './client';
 
 // Database and collection IDs
 export const DB = {
-  id: 'type',
+  id: 'main',
   collections: {
     notes: 'notes'
   }

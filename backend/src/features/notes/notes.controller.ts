@@ -12,6 +12,9 @@ export const getNotes = async (req: Request, res: Response): Promise<void> => {
 export const getNote = async (req: Request, res: Response): Promise<void> => {
   await handleAsync(req, res, async () => {
     const note = await NotesService.getNote(req.params.id, req.user!.$id);
+    if (!note || note.userId !== req.user!.$id) {
+      return { error: 'Note not found or unauthorized', status: 404 };
+    }
     return { data: note };
   });
 };
