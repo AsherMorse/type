@@ -5,12 +5,9 @@ export const auth = {
   // Create new account
   register: async (email: string, password: string) => {
     try {
-      // Create a valid user ID from email (before @)
-      const userId = 'user_' + email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-
       // Create the account
       const user = await account.create(
-        userId,
+        ID.unique(),
         email,
         password
       );
