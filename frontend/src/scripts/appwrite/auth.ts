@@ -5,8 +5,11 @@ export const auth = {
   // Create new account
   register: async (email: string, password: string) => {
     try {
+      // Create a valid user ID from email (before @)
+      const userId = 'user_' + email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+
       return await account.create(
-        ID.unique(),
+        userId,
         email,
         password
       );
@@ -21,13 +24,22 @@ export const auth = {
   // Login with email/password
   login: async (email: string, password: string) => {
     try {
-      const session = await account.createEmailPasswordSession(
+      // First, try to delete any existing session
+      try {
+        await account.deleteSession('current');
+      } catch (e) {
+        // Ignore errors here - session might not exist
+        console.debug('No existing session to delete');
+      }
+
+      // Now create a new session
+      const session = await account.createSession(
         email,
         password
       );
       return session;
     } catch (error) {
-      // Provide more user-friendly error messages
+      console.error('Login error:', error);
       if (error.code === 401) {
         throw new Error('Invalid email or password');
       }
@@ -39,7 +51,8 @@ export const auth = {
   getCurrentUser: async () => {
     try {
       return await account.get();
-    } catch {
+    } catch (error) {
+      console.error('Get user error:', error);
       return null;
     }
   },
@@ -49,7 +62,8 @@ export const auth = {
     try {
       await account.deleteSession('current');
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Logout error:', error);
       return false;
     }
   }

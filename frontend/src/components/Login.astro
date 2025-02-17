@@ -71,7 +71,6 @@ import "@styles/form.sass";
 <script>
   import { auth } from "@scripts/appwrite/auth";
   import { setAuthState } from "@scripts/state";
-  import { showStatus } from "@scripts/render/showStatus";
   import MicroModal from "micromodal";
 
   const form = document.querySelector(".login-form") as HTMLFormElement;
@@ -171,7 +170,7 @@ import "@styles/form.sass";
 
       if (user) {
         setAuthState(user, session?.$id);
-        showStatus("Logged in successfully");
+        window.showSuccess("Successfully logged in!");
         MicroModal.close("modal-login");
       } else {
         throw new Error("Failed to get user information");

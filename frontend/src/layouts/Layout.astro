@@ -1,22 +1,22 @@
 ---
-import Fonts from '@components/utils/Fonts.astro'
-import '@styles/global.sass'
+import Fonts from "@components/utils/Fonts.astro";
+import "@styles/global.sass";
 
-const defaultTitle = 'type.'
+const defaultTitle = "type.";
 const {
   title = defaultTitle,
   simpleTitle = false,
-  description = 'Zen markdown-friendly editor for just typing',
+  description = "Zen markdown-friendly editor for just typing",
   class: className,
-} = Astro.props
+} = Astro.props;
 
-let pageTitle = defaultTitle
+let pageTitle = defaultTitle;
 if (title !== defaultTitle)
-  pageTitle = simpleTitle ? title : `${title} | ${defaultTitle}`
+  pageTitle = simpleTitle ? title : `${title} | ${defaultTitle}`;
 
-const base = Astro.url.pathname.endsWith('/')
+const base = Astro.url.pathname.endsWith("/")
   ? Astro.url.pathname
-  : Astro.url.pathname + '/'
+  : Astro.url.pathname + "/";
 ---
 
 <!doctype html>
@@ -63,14 +63,14 @@ const base = Astro.url.pathname.endsWith('/')
       // This thing comes inline to avoid flickering when your
       // theme is not default. Sorry, just saving your eyes!
       function loadMode(mode) {
-        const value = localStorage.getItem(mode)
-        if (value && value !== 'undefined') {
-          document.documentElement.dataset[mode] = value
-          console.debug(`Loaded ${mode} ${value}`)
+        const value = localStorage.getItem(mode);
+        if (value && value !== "undefined") {
+          document.documentElement.dataset[mode] = value;
+          console.debug(`Loaded ${mode} ${value}`);
         }
       }
-      loadMode('theme')
-      loadMode('font')
+      loadMode("theme");
+      loadMode("font");
     </script>
 
     <title>{pageTitle}</title>
@@ -80,9 +80,3 @@ const base = Astro.url.pathname.endsWith('/')
     <slot />
   </body>
 </html>
-<script>
-  console.log(
-    '%cHello 🤙🏻',
-    'font-size: 1rem; background-color: #eee; padding: 0.5rem 1rem; border-radius: 0.25rem',
-  )
-</script>
