@@ -40,7 +40,6 @@ export const setAuthState = (user: Models.User<Models.Preferences>, token?: stri
   if (token) {
     storage.saveAuthToken(token);
   }
-  // Broadcast state change
   window.dispatchEvent(new CustomEvent('auth-state-change'));
 };
 
@@ -49,7 +48,6 @@ export const clearAuthState = () => {
   state.isAuthenticated = false;
   storage.removeAuthToken();
   storage.removeTempData();
-  // Broadcast state change
   window.dispatchEvent(new CustomEvent('auth-state-change'));
 };
 

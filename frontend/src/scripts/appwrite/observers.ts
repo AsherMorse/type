@@ -1,4 +1,5 @@
-import { updateUserState, clearAuthState } from './state';
+import { updateUserState, clearAuthState, state } from '../state';
+import { menu } from '../menu/elements';
 
 const AUTH_STATE_EVENT = 'auth-state-change';
 
@@ -22,6 +23,18 @@ export const observers = {
     // Listen for auth state changes
     window.addEventListener(AUTH_STATE_EVENT, async () => {
       await updateUserState();
+      // Update menu auth buttons visibility
+      const authSection = document.querySelectorAll(".auth-section");
+      authSection.forEach((section) => {
+        const button = section.querySelector("button");
+        if (button) {
+          if (button.classList.contains("logout")) {
+            (section as HTMLElement).hidden = !state.isAuthenticated;
+          } else {
+            (section as HTMLElement).hidden = state.isAuthenticated;
+          }
+        }
+      });
     });
 
     // Initial auth state check
