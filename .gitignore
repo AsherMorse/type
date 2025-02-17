@@ -1,5 +1,6 @@
 # build output
 dist/
+
 # generated types
 .astro/
 
@@ -22,6 +23,6 @@ pnpm-debug.log*
 .DS_Store
 
 # other
+.cursor
 project.txt
 appwrite.json
-prd.md
