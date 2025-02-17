@@ -65,11 +65,31 @@ export class NotesService {
 
   static async updateNote(noteId: string, data: Partial<Note>, userId: string): Promise<Note | null> {
     console.log('Updating note:', noteId, 'for user:', userId);
-    return null;
+    try {
+      const note = await db.update(DB.collections.notes, noteId, {
+        content: data.content,
+        lastModified: new Date().toISOString()
+      });
+
+      return {
+        id: note.$id,
+        content: note.content,
+        userId: note.userId
+      };
+    } catch (error) {
+      console.error('Error updating note:', error);
+      throw error;
+    }
   }
 
   static async deleteNote(noteId: string, userId: string): Promise<boolean> {
     console.log('Deleting note:', noteId, 'for user:', userId);
-    return true;
+    try {
+      await db.delete(DB.collections.notes, noteId);
+      return true;
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      return false;
+    }
   }
 } 
