@@ -8,11 +8,17 @@ export const auth = {
       // Create a valid user ID from email (before @)
       const userId = 'user_' + email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
-      return await account.create(
+      // Create the account
+      const user = await account.create(
         userId,
         email,
         password
       );
+
+      // Immediately create a session
+      const session = await account.createEmailPasswordSession(email, password);
+
+      return { user, session };
     } catch (error) {
       if (error.code === 409) {
         throw new Error('An account with this email already exists');
@@ -33,7 +39,7 @@ export const auth = {
       }
 
       // Now create a new session
-      const session = await account.createSession(
+      const session = await account.createEmailPasswordSession(
         email,
         password
       );
