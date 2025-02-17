@@ -6,30 +6,181 @@ import "@styles/form.sass";
 <Modal name="login" title="Login">
   <form class="form login-form">
     <div class="input-group">
-      <input type="email" id="email" name="email" placeholder="Email" />
+      <input
+        type="email"
+        id="login-email"
+        name="email"
+        placeholder="Email"
+        required
+        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+      />
+      <span class="error-message"></span>
     </div>
     <div class="input-group">
       <input
         type="password"
-        id="password"
+        id="login-password"
         name="password"
         placeholder="Password"
+        required
+        minlength="8"
       />
+      <span class="error-message"></span>
     </div>
-    <button type="submit" class="primary button">Login</button>
+    <div class="error-message form-error"></div>
+    <button type="submit" class="primary button">
+      <span class="button-text">Login</span>
+      <span class="loading-indicator hidden"></span>
+    </button>
   </form>
 </Modal>
 
 <style lang="sass">
-  .login-form .primary.button
-    margin: var(--space-l) auto 0
+  .login-form
+    .primary.button
+      margin: var(--space-l) auto 0
+      display: flex
+      align-items: center
+      gap: var(--space-m)
+
+    .error-message
+      color: var(--color-error)
+      font-size: var(--font-size-xs)
+      margin-top: var(--space-s)
+      display: none
+      &.show
+        display: block
+
+    .loading-indicator
+      width: 16px
+      height: 16px
+      border: 2px solid var(--color-main-15)
+      border-top-color: var(--color-main)
+      border-radius: 50%
+      animation: spin 1s linear infinite
+      &.hidden
+        display: none
+
+  @keyframes spin
+    0%
+      transform: rotate(0deg)
+    100%
+      transform: rotate(360deg)
 </style>
 
 <script>
-  import { handleFormSubmit } from "@scripts/utils/form";
-  document
-    .querySelector(".login-form")
-    ?.addEventListener("submit", (e: SubmitEvent) => {
-      handleFormSubmit(e, "Login");
+  import { auth } from "@scripts/appwrite/auth";
+  import { setAuthState } from "@scripts/state";
+  import MicroModal from "micromodal";
+
+  const form = document.querySelector(".login-form") as HTMLFormElement;
+  const emailInput = form.querySelector("#login-email") as HTMLInputElement;
+  const passwordInput = form.querySelector(
+    "#login-password",
+  ) as HTMLInputElement;
+  const submitButton = form.querySelector(
+    "button[type=submit]",
+  ) as HTMLButtonElement;
+  const formError = form.querySelector(".form-error") as HTMLDivElement;
+  const loadingIndicator = submitButton.querySelector(
+    ".loading-indicator",
+  ) as HTMLSpanElement;
+  const buttonText = submitButton.querySelector(
+    ".button-text",
+  ) as HTMLSpanElement;
+
+  let previousActiveElement: HTMLElement | null = null;
+
+  document.addEventListener("modal-login-show", () => {
+    previousActiveElement = document.activeElement as HTMLElement;
+    emailInput.focus();
+  });
+
+  document.addEventListener("modal-login-close", () => {
+    resetForm();
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+    }
+  });
+
+  const showError = (element: HTMLElement, message: string) => {
+    const errorElement = element.parentElement?.querySelector(".error-message");
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.classList.add("show");
+    }
+  };
+
+  const clearErrors = () => {
+    form.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+      el.classList.remove("show");
     });
+  };
+
+  const setLoading = (loading: boolean) => {
+    submitButton.disabled = loading;
+    emailInput.disabled = loading;
+    passwordInput.disabled = loading;
+    loadingIndicator.classList.toggle("hidden", !loading);
+    buttonText.textContent = loading ? "Logging in..." : "Login";
+  };
+
+  const resetForm = () => {
+    form.reset();
+    clearErrors();
+    setLoading(false);
+  };
+
+  form.addEventListener("submit", async (e: SubmitEvent) => {
+    e.preventDefault();
+    clearErrors();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    // Validate email
+    if (!email) {
+      showError(emailInput, "Email is required");
+      emailInput.focus();
+      return;
+    }
+    if (!emailInput.validity.valid) {
+      showError(emailInput, "Please enter a valid email address");
+      emailInput.focus();
+      return;
+    }
+
+    // Validate password
+    if (!password) {
+      showError(passwordInput, "Password is required");
+      passwordInput.focus();
+      return;
+    }
+    if (password.length < 8) {
+      showError(passwordInput, "Password must be at least 8 characters");
+      passwordInput.focus();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const session = await auth.login(email, password);
+      const user = await auth.getCurrentUser();
+
+      if (user) {
+        setAuthState(user, session?.$id);
+        window.showSuccess("Successfully logged in!");
+        MicroModal.close("modal-login");
+      } else {
+        throw new Error("Failed to get user information");
+      }
+    } catch (error) {
+      formError.textContent =
+        error.message || "Login failed. Please try again.";
+      formError.classList.add("show");
+      setLoading(false);
+      emailInput.focus();
+    }
+  });
 </script>

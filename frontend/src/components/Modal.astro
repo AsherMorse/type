@@ -1,97 +1,112 @@
 ---
-import { Icon } from 'astro-icon/components'
-const { name, title } = Astro.props
+import { Icon } from "astro-icon/components";
+const { name, title } = Astro.props;
 ---
 
-<div class="modal" id=`modal-${name}` aria-hidden="true">
-	<div class="overlay" tabindex="-1" data-micromodal-close>
-		<div
-			class="dialog"
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby=`modal-${name}-title`
-		>
-			<header class="header">
-				<h2 id=`modal-${name}-title`>{title}</h2>
-				<button aria-label="Close modal" data-micromodal-close
-					><Icon name="close" /></button
-				>
-			</header>
-			<div id=`modal-${name}-content` class="content"><slot /></div>
-		</div>
-	</div>
+<div
+  class="modal"
+  id={`modal-${name}`}
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby={`modal-${name}-title`}
+>
+  <div class="overlay" tabindex="-1" data-micromodal-close>
+    <div class="dialog" role="document">
+      <header class="header">
+        <h2 id={`modal-${name}-title`}>{title}</h2>
+        <button aria-label="Close modal" data-micromodal-close
+          ><slot name="close-icon">✕</slot></button
+        >
+      </header>
+      <div id={`modal-${name}-content`} class="content">
+        <slot />
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  import MicroModal from "micromodal";
+
+  // Configure MicroModal with focus management
+  MicroModal.init({
+    onShow: (modal) => {
+      // Remove aria-hidden when modal is shown
+      modal.setAttribute("aria-hidden", "false");
+
+      // Dispatch custom event for component-specific focus management
+      const event = new CustomEvent(
+        `modal-${modal.id.replace("modal-", "")}-show`,
+      );
+      document.dispatchEvent(event);
+    },
+    onClose: (modal) => {
+      // Set aria-hidden when modal is closed
+      modal.setAttribute("aria-hidden", "true");
+
+      // Dispatch custom event for component-specific cleanup
+      const event = new CustomEvent(
+        `modal-${modal.id.replace("modal-", "")}-close`,
+      );
+      document.dispatchEvent(event);
+    },
+    disableScroll: true,
+    disableFocus: true, // Let components handle their own focus
+    awaitOpenAnimation: false,
+    awaitCloseAnimation: false,
+  });
+</script>
+
 <style>
-	.modal {
-		opacity: 0;
-		pointer-events: none;
-		z-index: 5;
+  .modal {
+    display: none;
+    &.is-open {
+      display: block;
+    }
+  }
 
-		transition: opacity var(--transition-m);
-		&.is-open {
-			opacity: 1;
-			pointer-events: all;
+  .overlay {
+    background: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
 
-			.dialog {
-				transform: scale(1);
-			}
-		}
-	}
+  .dialog {
+    background: var(--color-background);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+  }
 
-	.overlay {
-		background: #00000080;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-l);
 
-		display: flex;
-		justify-content: center;
-		align-items: center;
+    h2 {
+      margin: 0;
+      font-size: var(--font-size-m);
+      font-weight: normal;
+    }
 
-		position: fixed;
-		width: 100vw;
-		height: 100vh;
-
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.dialog {
-		display: flex;
-		flex-direction: column;
-
-		max-height: 60vh;
-		max-width: 100%;
-		overflow: auto;
-
-		background: var(--color-background);
-		border-radius: var(--radius-l);
-		transform: scale(0.75);
-		transition: transform var(--transition-m);
-	}
-
-	.header {
-		display: flex;
-		align-items: center;
-		width: 100%;
-		padding: var(--space-l);
-		h2 {
-			font-size: inherit;
-			font-weight: inherit;
-			width: 100%;
-		}
-	}
-
-	.content {
-		overflow-y: scroll;
-		font-size: var(--font-size-s);
-		padding: var(--space-l);
-	}
-
-	button svg {
-		pointer-events: none;
-	}
-
-	svg {
-		width: 24px;
-		height: 24px;
-	}
+    button {
+      padding: var(--space-s);
+      opacity: 0.5;
+      transition: opacity var(--transition-s);
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
 </style>

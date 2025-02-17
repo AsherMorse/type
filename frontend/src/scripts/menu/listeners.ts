@@ -3,17 +3,25 @@ import { exportAll, exportFile } from '@scripts/note/export'
 import { unlock } from '@scripts/editor/lock'
 import { publish } from '@scripts/note/publish'
 import { save } from '@scripts/note/save'
-import { currentAppearance, cycleAppearance } from '@scripts/render/appearance'
-import { state } from '@scripts/state'
-import { loadCurrentId } from '@scripts/utils/currentNote'
-import { showStatus } from '@scripts/render/showStatus'
+import { currentAppearance, cycleAppearance } from '@scripts/render/appearance';
+import { state } from '@scripts/state';
+import { loadCurrentId } from '@scripts/utils/currentNote';
+import { showStatus } from '@scripts/render/showStatus';
+import { auth } from '@scripts/appwrite/auth';
+
+declare global {
+  interface Window {
+    showSuccess: (message: string, duration?: number) => void;
+  }
+}
 
 export function initMenuListeners() {
-  console.debug(`Assigning menu listeners`)
+  console.debug('Assigning menu listeners');
+
   // Open menu
   menu.showMenuEl.addEventListener('click', () => {
-    menu.showMenuEl.classList.toggle('active')
-  })
+    menu.showMenuEl.classList.toggle('active');
+  });
   // Hide menu on outside click
   document.documentElement.addEventListener('click', (e: MouseEvent) => {
     if (
@@ -47,7 +55,7 @@ export function initMenuListeners() {
     save('copy')
   })
 
-  // Set actual vaulues
+  // Set actual values
   menu.fontValueEl.textContent = currentAppearance('font')
   menu.themeValueEl.textContent = currentAppearance('theme')
   menu.spellValueEl.textContent = state.editorEl.spellcheck ? 'on' : 'off'
@@ -76,4 +84,32 @@ export function initMenuListeners() {
   menu.registerEl.addEventListener('click', () => {
     menu.showMenuEl.classList.remove('active')
   })
+
+  // Logout
+  const logoutButton = document.querySelector(".logout");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      try {
+        const success = await auth.logout();
+        if (success) {
+          window.showSuccess("Successfully logged out!");
+          // Close any open modals
+          const dropdowns = document.querySelectorAll(".menu-dropdown");
+          dropdowns.forEach((dropdown) => {
+            if (dropdown.classList.contains("is-active")) {
+              dropdown.classList.remove("is-active");
+            }
+          });
+          // Refresh the page to reset the app state
+          window.location.reload();
+        } else {
+          console.error("Logout failed");
+          window.showSuccess("Failed to log out", 2000);
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+        window.showSuccess("Failed to log out", 2000);
+      }
+    });
+  }
 }

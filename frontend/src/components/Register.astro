@@ -6,38 +6,215 @@ import "@styles/form.sass";
 <Modal name="register" title="Register">
   <form class="form register-form">
     <div class="input-group">
-      <input type="email" id="email" name="email" placeholder="Email" />
+      <input
+        type="email"
+        id="register-email"
+        name="email"
+        placeholder="Email"
+        required
+        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+      />
+      <span class="error-message"></span>
     </div>
     <div class="input-group">
       <input
         type="password"
-        id="password"
+        id="register-password"
         name="password"
         placeholder="Password"
+        required
+        minlength="8"
       />
+      <span class="error-message"></span>
     </div>
     <div class="input-group">
       <input
         type="password"
-        id="confirm-password"
+        id="register-confirm-password"
         name="confirm-password"
         placeholder="Confirm Password"
+        required
+        minlength="8"
       />
+      <span class="error-message"></span>
     </div>
-    <button type="submit" class="primary button">Register</button>
+    <div class="error-message form-error"></div>
+    <button type="submit" class="primary button">
+      <span class="button-text">Register</span>
+      <span class="loading-indicator hidden"></span>
+    </button>
   </form>
 </Modal>
 
 <style lang="sass">
-  .register-form .primary.button
-    margin: var(--space-l) auto 0
+  .register-form
+    .primary.button
+      margin: var(--space-l) auto 0
+      display: flex
+      align-items: center
+      gap: var(--space-m)
+
+    .error-message
+      color: var(--color-error)
+      font-size: var(--font-size-xs)
+      margin-top: var(--space-s)
+      display: none
+      &.show
+        display: block
+
+    .loading-indicator
+      width: 16px
+      height: 16px
+      border: 2px solid var(--color-main-15)
+      border-top-color: var(--color-main)
+      border-radius: 50%
+      animation: spin 1s linear infinite
+      &.hidden
+        display: none
+
+  @keyframes spin
+    0%
+      transform: rotate(0deg)
+    100%
+      transform: rotate(360deg)
 </style>
 
 <script>
-  import { handleFormSubmit } from "@scripts/utils/form";
-  document
-    .querySelector(".register-form")
-    ?.addEventListener("submit", (e: SubmitEvent) => {
-      handleFormSubmit(e, "Register");
+  import { auth } from "@scripts/appwrite/auth";
+  import { setAuthState } from "@scripts/state";
+  import { showStatus } from "@scripts/render/showStatus";
+  import MicroModal from "micromodal";
+
+  const form = document.querySelector(".register-form") as HTMLFormElement;
+  const emailInput = form.querySelector("#register-email") as HTMLInputElement;
+  const passwordInput = form.querySelector(
+    "#register-password",
+  ) as HTMLInputElement;
+  const confirmPasswordInput = form.querySelector(
+    "#register-confirm-password",
+  ) as HTMLInputElement;
+  const submitButton = form.querySelector(
+    "button[type=submit]",
+  ) as HTMLButtonElement;
+  const formError = form.querySelector(".form-error") as HTMLDivElement;
+  const loadingIndicator = submitButton.querySelector(
+    ".loading-indicator",
+  ) as HTMLSpanElement;
+  const buttonText = submitButton.querySelector(
+    ".button-text",
+  ) as HTMLSpanElement;
+
+  let previousActiveElement: HTMLElement | null = null;
+
+  document.addEventListener("modal-register-show", () => {
+    previousActiveElement = document.activeElement as HTMLElement;
+    emailInput.focus();
+  });
+
+  document.addEventListener("modal-register-close", () => {
+    resetForm();
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+    }
+  });
+
+  const showError = (element: HTMLElement, message: string) => {
+    const errorElement = element.parentElement?.querySelector(".error-message");
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.classList.add("show");
+    }
+  };
+
+  const clearErrors = () => {
+    form.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+      el.classList.remove("show");
     });
+  };
+
+  const setLoading = (loading: boolean) => {
+    submitButton.disabled = loading;
+    emailInput.disabled = loading;
+    passwordInput.disabled = loading;
+    confirmPasswordInput.disabled = loading;
+    loadingIndicator.classList.toggle("hidden", !loading);
+    buttonText.textContent = loading ? "Registering..." : "Register";
+  };
+
+  const resetForm = () => {
+    form.reset();
+    clearErrors();
+    setLoading(false);
+  };
+
+  const showSuccess = (window as any).showSuccess;
+
+  form.addEventListener("submit", async (e: SubmitEvent) => {
+    e.preventDefault();
+    clearErrors();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    // Validate email
+    if (!email) {
+      showError(emailInput, "Email is required");
+      emailInput.focus();
+      return;
+    }
+    if (!emailInput.validity.valid) {
+      showError(emailInput, "Please enter a valid email address");
+      emailInput.focus();
+      return;
+    }
+
+    // Validate password
+    if (!password) {
+      showError(passwordInput, "Password is required");
+      passwordInput.focus();
+      return;
+    }
+    if (password.length < 8) {
+      showError(passwordInput, "Password must be at least 8 characters");
+      passwordInput.focus();
+      return;
+    }
+
+    // Validate confirm password
+    if (!confirmPassword) {
+      showError(confirmPasswordInput, "Please confirm your password");
+      confirmPasswordInput.focus();
+      return;
+    }
+    if (password !== confirmPassword) {
+      showError(confirmPasswordInput, "Passwords do not match");
+      confirmPasswordInput.focus();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Register the user
+      await auth.register(email, password);
+      // Log them in automatically
+      const session = await auth.login(email, password);
+      const user = await auth.getCurrentUser();
+
+      if (user) {
+        setAuthState(user, session?.$id);
+        window.showSuccess("Successfully registered and logged in!");
+        MicroModal.close("modal-register");
+      } else {
+        throw new Error("Failed to get user information");
+      }
+    } catch (error) {
+      formError.textContent =
+        error.message || "Registration failed. Please try again.";
+      formError.classList.add("show");
+      setLoading(false);
+      emailInput.focus();
+    }
+  });
 </script>

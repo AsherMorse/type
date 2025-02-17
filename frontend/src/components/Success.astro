@@ -1,0 +1,71 @@
+---
+import "@styles/success.sass";
+---
+
+<div class="success-message" aria-live="polite">
+  <div class="success-content">
+    <span class="icon">✓</span>
+    <span class="message"></span>
+  </div>
+</div>
+
+<style lang="sass">
+  .success-message
+    position: fixed
+    top: var(--space-l)
+    left: 50%
+    transform: translateX(-50%) translateY(-100%)
+    z-index: 2000
+    opacity: 0
+    pointer-events: none
+    transition: all var(--transition-m)
+
+    &.show
+      transform: translateX(-50%) translateY(0)
+      opacity: 1
+
+  .success-content
+    display: flex
+    align-items: center
+    gap: var(--space-m)
+    padding: var(--space-m) var(--space-l)
+    background: var(--color-main-05)
+    border: 1px solid var(--color-main-15)
+    border-radius: var(--radius-l)
+    font-size: var(--font-size-s)
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
+
+    .icon
+      color: var(--color-success)
+      font-size: 1.2em
+</style>
+
+<script>
+  // Initialize the global function immediately
+  window.showSuccess = function (message: string, duration = 3000) {
+    const successEl = document.querySelector(".success-message") as HTMLElement;
+    const messageEl = successEl.querySelector(".message") as HTMLElement;
+
+    // Clear any existing timeout
+    if (window.successTimeout) {
+      clearTimeout(window.successTimeout);
+    }
+
+    // Update and show message
+    messageEl.textContent = message;
+    successEl.classList.add("show");
+
+    // Hide after duration
+    window.successTimeout = setTimeout(() => {
+      successEl.classList.remove("show");
+    }, duration);
+  };
+
+  // Add type declaration
+  declare global {
+    interface Window {
+      showSuccess: (message: string, duration?: number) => void;
+      successTimeout?: NodeJS.Timeout;
+    }
+  }
+</script>
