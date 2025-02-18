@@ -65,13 +65,21 @@ import "@styles/bottom-input.sass";
     const format = window.getSelectedFormat();
     const value = inputEl.value;
 
-    if (value.trim()) {
-      console.log("Submitting:", value);
-      console.log("Selected format:", format);
-      if (format) {
-        console.log(`Applying ${format} format to: "${value}"`);
-      }
+    if (!value.trim()) return;
+
+    if (!format) {
+      window.showBottomAlert("Please select a format first!");
+      // Flash the format button to draw attention
+      const formatButton = document.querySelector(".side-button.left");
+      formatButton?.classList.add("flash");
+      setTimeout(() => formatButton?.classList.remove("flash"), 1000);
+      return;
     }
+
+    console.log("Submitting:", value);
+    console.log("Selected format:", format);
+    console.log(`Applying ${format} format to: "${value}"`);
+    window.showSuccess(`Added ${format} formatted text`, 2000);
     inputEl.value = ""; // Clear the input
   };
 
@@ -202,4 +210,23 @@ import "@styles/bottom-input.sass";
       handleButtonClick: (button: HTMLElement) => void;
     }
   }
+
+  // Add input content check
+  const textarea = document.querySelector(
+    ".bottom-input textarea",
+  ) as HTMLTextAreaElement;
+  const submitButton = document.querySelector(
+    ".bottom-input .side-button.right",
+  ) as HTMLButtonElement;
+
+  // Initial state
+  submitButton.classList.add("disabled");
+
+  textarea.addEventListener("input", () => {
+    if (textarea.value.trim()) {
+      submitButton.classList.remove("disabled");
+    } else {
+      submitButton.classList.add("disabled");
+    }
+  });
 </script>

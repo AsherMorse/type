@@ -106,6 +106,22 @@
             opacity: 1
             pointer-events: auto
 
+        &.disabled
+          opacity: 0.5
+          cursor: default
+          
+          &:hover
+            color: var(--color-main-50)
+
+        &.flash
+          animation: flash 1s
+          
+        @keyframes flash
+          0%, 100%
+            color: var(--color-main-50)
+          50%
+            color: var(--color-accent)
+
     textarea
       width: 100%
       min-height: 24px

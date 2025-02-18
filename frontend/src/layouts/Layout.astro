@@ -3,6 +3,7 @@ import Fonts from "@components/utils/Fonts.astro";
 import "@styles/global.sass";
 import BottomInput from "@components/BottomInput.astro";
 import FormatMenu from "../components/FormatMenu.astro";
+import BottomAlert from "../components/BottomAlert.astro";
 
 const defaultTitle = "type.";
 const {
@@ -81,6 +82,7 @@ const base = Astro.url.pathname.endsWith("/")
     <!-- <h1 class="page-heading">Zen-editor for just typing</h1> -->
     <slot />
     <FormatMenu />
+    <BottomAlert />
     <BottomInput />
   </body>
 </html>
