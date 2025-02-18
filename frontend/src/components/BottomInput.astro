@@ -76,10 +76,7 @@ import "@styles/bottom-input.sass";
       return;
     }
 
-    console.log("Submitting:", value);
-    console.log("Selected format:", format);
-    console.log(`Applying ${format} format to: "${value}"`);
-    window.showSuccess(`Added ${format} formatted text`, 2000);
+    window.handleAiCommand(value, format);
     inputEl.value = ""; // Clear the input
   };
 
@@ -208,6 +205,7 @@ import "@styles/bottom-input.sass";
       ) => void;
       bottomInputTimeout?: NodeJS.Timeout;
       handleButtonClick: (button: HTMLElement) => void;
+      handleAiCommand: (text: string, format: string | null) => void;
     }
   }
 

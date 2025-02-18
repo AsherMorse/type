@@ -4,6 +4,7 @@ import "@styles/global.sass";
 import BottomInput from "@components/BottomInput.astro";
 import FormatMenu from "../components/FormatMenu.astro";
 import BottomAlert from "../components/BottomAlert.astro";
+import AiAssistant from "../components/AiAssistant.astro";
 
 const defaultTitle = "type.";
 const {
@@ -83,6 +84,7 @@ const base = Astro.url.pathname.endsWith("/")
     <slot />
     <FormatMenu />
     <BottomAlert />
+    <AiAssistant />
     <BottomInput />
   </body>
 </html>
