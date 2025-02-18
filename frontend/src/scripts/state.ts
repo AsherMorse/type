@@ -9,6 +9,8 @@ import { getEditorVersion } from '@scripts/utils/getEditorVersion';
 import { auth } from '@scripts/appwrite/auth';
 import { storage } from '@scripts/appwrite/storage';
 
+type StorageMode = 'local' | 'cloud';
+
 export const state = {
   // Editor
   editor: null as Editor,						// Global editor object
@@ -23,6 +25,7 @@ export const state = {
   opfs: null as FileSystemDirectoryHandle,	// Entry for origin-private file system
   notes: [] as Note[],						// All the loaded notes
   hasNotes: true,								// Number of notes is not 0
+  storageMode: 'local' as StorageMode,
 
   // Elements
   mainEl: null as HTMLElement,				// Editor + Notes (w/o header)
@@ -72,6 +75,7 @@ export async function initState() {
   state.empty = true
   state.updated = false
   state.editorVersion = getEditorVersion()
+  state.storageMode = localStorage.getItem('storage-mode') as StorageMode || 'local'
 
   state.opfs = await getOpfs()
   state.notes = await getNotes(state.opfs)

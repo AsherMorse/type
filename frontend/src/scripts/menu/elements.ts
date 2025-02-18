@@ -15,6 +15,8 @@ export const menu = {
   spellValueEl: null,
   loginEl: null,
   registerEl: null,
+  storageToggleEl: null,
+  storageValueEl: null,
 }
 
 export function initMenuElements(parentElement = document.documentElement) {
@@ -32,4 +34,6 @@ export function initMenuElements(parentElement = document.documentElement) {
   menu.spellValueEl = getByClass('value', menu.spellEl)
   menu.loginEl = getByClass('login', menu.dropdownEl)
   menu.registerEl = getByClass('register', menu.dropdownEl)
+  menu.storageToggleEl = getByClass('storage-toggle', menu.dropdownEl)
+  menu.storageValueEl = getByClass('value', menu.storageToggleEl)
 }
