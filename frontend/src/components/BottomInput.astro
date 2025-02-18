@@ -91,7 +91,7 @@ import "@styles/bottom-input.sass";
       // Check auth state first
       await updateUserState();
 
-      const response = await fetch(`${import.meta.env.PUBLIC_API}/ai/format`, {
+      const response = await fetch(`/api/ai/format`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
