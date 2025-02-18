@@ -57,6 +57,28 @@ import "@styles/bottom-input.sass";
   // Track if input is shown to prevent multiple instances
   let isInputShown = false;
 
+  // Default submit handler
+  const defaultSubmitHandler = (e: Event) => {
+    e.preventDefault();
+    const formEl = e.target as HTMLFormElement;
+    const inputEl = formEl.querySelector("textarea") as HTMLTextAreaElement;
+    const format = window.getSelectedFormat();
+    const value = inputEl.value;
+
+    if (value.trim()) {
+      console.log("Submitting:", value);
+      console.log("Selected format:", format);
+      if (format) {
+        console.log(`Applying ${format} format to: "${value}"`);
+      }
+    }
+    inputEl.value = ""; // Clear the input
+  };
+
+  // Add default submit handler to form
+  const formEl = document.querySelector(".bottom-input form");
+  formEl?.addEventListener("submit", defaultSubmitHandler);
+
   // Initialize the global function
   window.showBottomInput = function (
     placeholder = "Enter text...",
