@@ -37,7 +37,8 @@ export async function getLocalNotes(opfs: FileSystemDirectoryHandle) {
       }
 
       note.content = await file.text()
-      note.name = localStorage.getItem(`name-${file.name}`) || note.content.slice(0, 50) || 'Empty note'
+      const firstLine = note.content.split('\n')[0].trim()
+      note.name = localStorage.getItem(`name-${file.name}`) || firstLine || 'Empty note'
       notes.push(note)
     }
   }
@@ -63,7 +64,7 @@ async function getCloudNotes() {
 
     const notes: Note[] = response.documents.map(doc => ({
       id: doc.$id,
-      name: doc.content.slice(0, 50) || 'Empty note',
+      name: doc.content.split('\n')[0].trim() || 'Empty note',
       content: doc.content,
       author: 'type.cloud',
       modified: new Date(doc.lastModified),

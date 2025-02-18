@@ -1,0 +1,31 @@
+---
+import "@styles/bottom-alert.sass";
+---
+
+<div class="bottom-alert" id="bottom-alert">
+  <div class="alert-content">
+    <span class="message"></span>
+  </div>
+</div>
+
+<script>
+  window.showBottomAlert = function (message: string, duration = 2000) {
+    const alertEl = document.getElementById("bottom-alert");
+    const messageEl = alertEl?.querySelector(".message");
+
+    if (alertEl && messageEl) {
+      messageEl.textContent = message;
+      alertEl.classList.add("show");
+
+      setTimeout(() => {
+        alertEl.classList.remove("show");
+      }, duration);
+    }
+  };
+
+  declare global {
+    interface Window {
+      showBottomAlert: (message: string, duration?: number) => void;
+    }
+  }
+</script>
