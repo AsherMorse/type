@@ -9,6 +9,7 @@ import "@styles/bottom-input.sass";
         type="button"
         class="side-button left"
         aria-label="Formatting options"
+        onclick="window.toggleFormatMenu()"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +28,12 @@ import "@styles/bottom-input.sass";
         </svg>
       </button>
       <textarea placeholder="Enter text..." rows="1"></textarea>
-      <button type="submit" class="side-button right" aria-label="Submit">
+      <button
+        type="button"
+        class="side-button right"
+        aria-label="Submit"
+        onclick="window.handleButtonClick(this)"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -54,7 +60,7 @@ import "@styles/bottom-input.sass";
   // Initialize the global function
   window.showBottomInput = function (
     placeholder = "Enter text...",
-    onSubmit: (value: string) => void,
+    onSubmit: (value: string, format: string | null) => void,
   ) {
     if (isInputShown) return;
     isInputShown = true;
@@ -91,7 +97,14 @@ import "@styles/bottom-input.sass";
     // Handle submit
     const handleSubmit = (e: Event) => {
       e.preventDefault();
-      console.log("submit");
+      const format = window.getSelectedFormat();
+      const value = inputEl.value;
+      if (onSubmit && value.trim()) {
+        // Only submit if there's content
+        console.log("Submitting with format:", format);
+        onSubmit(value, format);
+      }
+      inputEl.value = ""; // Clear the input
       bottomInputEl.classList.remove("show");
       isInputShown = false;
     };
@@ -138,21 +151,33 @@ import "@styles/bottom-input.sass";
     // Check for Cmd/Ctrl + K
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
       e.preventDefault(); // Prevent default browser behavior
-      window.showBottomInput("Type a command...", (value) => {
+      window.showBottomInput("Type a command...", (value, format) => {
         console.log("Command entered:", value);
-        // Handle the command here
+        console.log("Selected format:", format);
+        if (format) {
+          console.log(`Applying ${format} format to: "${value}"`);
+        }
       });
     }
   });
 
-  // Add type declaration
+  window.handleButtonClick = function (button: HTMLElement) {
+    const formEl = button.closest("form");
+    if (formEl) {
+      const event = new SubmitEvent("submit", { cancelable: true });
+      formEl.dispatchEvent(event);
+    }
+  };
+
+  // Update type declaration
   declare global {
     interface Window {
       showBottomInput: (
         placeholder: string,
-        onSubmit: (value: string) => void,
+        onSubmit: (value: string, format: string | null) => void,
       ) => void;
       bottomInputTimeout?: NodeJS.Timeout;
+      handleButtonClick: (button: HTMLElement) => void;
     }
   }
 </script>

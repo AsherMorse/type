@@ -1,0 +1,44 @@
+---
+import "@styles/format-menu.sass";
+---
+
+<div class="format-menu" id="format-menu">
+  <div class="menu-item" data-format="checklist">Checklist</div>
+  <div class="menu-item" data-format="bullet">Bullet List</div>
+  <div class="menu-item" data-format="number">Numbered List</div>
+</div>
+
+<script>
+  let selectedFormat: string | null = null;
+
+  window.toggleFormatMenu = function () {
+    const menu = document.getElementById("format-menu");
+    menu?.classList.toggle("show");
+  };
+
+  window.getSelectedFormat = function () {
+    return selectedFormat;
+  };
+
+  // Add click handlers to menu items
+  const menuItems = document.querySelectorAll(".menu-item");
+  menuItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      selectedFormat = (item as HTMLElement).dataset.format || null;
+      console.log("Format selected:", selectedFormat);
+      // Add visual feedback
+      menuItems.forEach((mi) => mi.classList.remove("selected"));
+      item.classList.add("selected");
+      // Hide menu after selection
+      window.toggleFormatMenu();
+    });
+  });
+
+  // Add type declaration
+  declare global {
+    interface Window {
+      toggleFormatMenu: () => void;
+      getSelectedFormat: () => string | null;
+    }
+  }
+</script>

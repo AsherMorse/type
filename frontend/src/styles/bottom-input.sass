@@ -74,6 +74,37 @@
           
         &.left
           left: -70px
+          
+          .format-menu
+            position: fixed
+            bottom: calc(var(--space-l) + 60px)
+            left: calc(50% - 320px - 70px)
+            transform: translateX(-50%)
+            background: color-mix(in hsl, var(--color-background) 50%, transparent)
+            backdrop-filter: blur(50px)
+            -webkit-backdrop-filter: blur(50px)
+            border: 1px solid var(--color-main-05)
+            border-radius: var(--radius-l)
+            padding: 0.5rem
+            min-width: 160px
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08)
+            opacity: 0
+            pointer-events: none
+            transition: opacity 0.2s ease
+            z-index: 2001
+            
+            .menu-item
+              padding: 0.5rem 1rem
+              color: var(--color-main)
+              cursor: pointer
+              border-radius: var(--radius-s)
+              
+              &:hover
+                background: var(--color-main-05)
+          
+          &:hover .format-menu
+            opacity: 1
+            pointer-events: auto
 
     textarea
       width: 100%
