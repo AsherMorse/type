@@ -28,7 +28,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     client.setSession(sessionCookie);
     console.log('Getting user...');
     const user = await account.get();
-    console.log('User:', user);
+    console.log('User email:', user.email);
     req.user = user;
     next();
   } catch (error) {

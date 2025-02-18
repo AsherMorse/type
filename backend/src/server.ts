@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { authMiddleware } from './features/auth/auth.middleware';
 import notesRoutes from './features/notes/notes.routes';
+import aiRoutes from './features/ai/ai.routes';
 import './features/auth/types';
 
 const app = express();
@@ -44,6 +45,7 @@ app.get('/protected', authMiddleware, (req: Request, res: Response): void => {
 
 // Notes routes
 app.use('/api/notes', authMiddleware, notesRoutes);
+app.use('/api/ai', authMiddleware, aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
