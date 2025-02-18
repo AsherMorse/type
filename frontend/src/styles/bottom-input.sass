@@ -1,0 +1,94 @@
+.bottom-input
+  position: fixed
+  bottom: var(--space-l)
+  left: 50%
+  transform: translateX(-50%) translateY(100%)
+  z-index: 2000
+  opacity: 0
+  pointer-events: none
+  transition: all var(--transition-m)
+
+  &.show
+    transform: translateX(-50%) translateY(0)
+    opacity: 1
+    pointer-events: auto
+
+  .input-content
+    display: flex
+    align-items: flex-start
+    padding: var(--space-m) var(--space-l)
+    background: color-mix(in hsl, var(--color-background) 50%, transparent)
+    backdrop-filter: blur(50px)
+    -webkit-backdrop-filter: blur(50px)
+    border-radius: var(--radius-xl)
+    font-size: var(--font-size-m)
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08)
+    border: 1px solid var(--color-main-05)
+    max-width: 90vw
+    width: 640px
+
+    form
+      position: relative
+      width: 100%
+      
+      textarea
+        width: 100%
+        padding-right: 2.5rem
+        
+      button
+        position: absolute
+        right: -10px
+        bottom: -6px
+        background: none
+        border: none
+        padding: 0.5rem
+        cursor: pointer
+        color: var(--color-main-50)
+        transition: color 0.2s ease
+        display: flex
+        align-items: center
+        justify-content: center
+        
+        &:hover
+          color: var(--color-main)
+        
+        svg
+          width: 1.2rem
+          height: 1.2rem
+
+    textarea
+      width: 100%
+      min-height: 24px
+      max-height: 50vh
+      padding: 0
+      border: none
+      background: transparent
+      color: var(--color-main)
+      font-family: var(--font-main)
+      resize: none
+      overflow-y: auto
+      line-height: 1.4
+      display: block
+      overflow-x: hidden
+      word-wrap: break-word
+      box-sizing: content-box
+
+      &:focus
+        outline: none
+
+      &::placeholder
+        color: var(--color-main-25)
+
+    .submit-button
+      margin-top: calc(var(--space-s) + 2px)
+      padding: var(--space-s) var(--space-m)
+      color: var(--color-main)
+      background: var(--color-main-05)
+      border-radius: var(--radius-m)
+      transition: all var(--transition-s)
+      
+      &:hover
+        background: var(--color-main-15)
+      
+      &:active
+        transform: scale(0.95) 

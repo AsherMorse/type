@@ -1,0 +1,137 @@
+---
+import "@styles/bottom-input.sass";
+---
+
+<div class="bottom-input" aria-live="polite">
+  <div class="input-content">
+    <form>
+      <textarea placeholder="Enter text..." rows="1"></textarea>
+      <button type="submit" aria-label="Submit">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Track if input is shown to prevent multiple instances
+  let isInputShown = false;
+
+  // Initialize the global function
+  window.showBottomInput = function (
+    placeholder = "Enter text...",
+    onSubmit: (value: string) => void,
+  ) {
+    if (isInputShown) return;
+    isInputShown = true;
+
+    const bottomInputEl = document.querySelector(
+      ".bottom-input",
+    ) as HTMLElement;
+    const inputEl = bottomInputEl.querySelector(
+      "textarea",
+    ) as HTMLTextAreaElement;
+    const formEl = bottomInputEl.querySelector("form") as HTMLFormElement;
+
+    // Clear any existing timeout
+    if (window.bottomInputTimeout) {
+      clearTimeout(window.bottomInputTimeout);
+    }
+
+    // Function to adjust textarea height
+    const adjustHeight = () => {
+      // Reset height to auto first to get the correct scrollHeight
+      inputEl.style.height = "auto";
+      // Set to scrollHeight to expand the textarea
+      inputEl.style.height = inputEl.scrollHeight + "px";
+    };
+
+    // Reset and show input
+    inputEl.value = "";
+    inputEl.placeholder = placeholder;
+    bottomInputEl.classList.add("show");
+    inputEl.focus();
+    // Initial height adjustment
+    requestAnimationFrame(adjustHeight);
+
+    // Handle submit
+    const handleSubmit = (e: Event) => {
+      e.preventDefault();
+      console.log("submit");
+      bottomInputEl.classList.remove("show");
+      isInputShown = false;
+    };
+
+    // Add event listeners
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Allow Shift+Enter for new lines
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        formEl.requestSubmit();
+        return;
+      }
+      if (e.key === "Escape") {
+        bottomInputEl.classList.remove("show");
+        isInputShown = false;
+        return;
+      }
+      // Adjust height on any other key press
+      requestAnimationFrame(adjustHeight);
+    };
+
+    // Add input listener for auto-height
+    inputEl.addEventListener("input", () =>
+      requestAnimationFrame(adjustHeight),
+    );
+    inputEl.addEventListener("keydown", handleKeydown);
+    formEl.addEventListener("submit", handleSubmit);
+
+    // Cleanup function
+    const cleanup = () => {
+      inputEl.removeEventListener("input", () =>
+        requestAnimationFrame(adjustHeight),
+      );
+      inputEl.removeEventListener("keydown", handleKeydown);
+      formEl.removeEventListener("submit", handleSubmit);
+    };
+
+    // Auto cleanup after component is hidden
+    bottomInputEl.addEventListener("transitionend", cleanup, { once: true });
+  };
+
+  // Add keyboard shortcut listener
+  document.addEventListener("keydown", (e: KeyboardEvent) => {
+    // Check for Cmd/Ctrl + K
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault(); // Prevent default browser behavior
+      window.showBottomInput("Type a command...", (value) => {
+        console.log("Command entered:", value);
+        // Handle the command here
+      });
+    }
+  });
+
+  // Add type declaration
+  declare global {
+    interface Window {
+      showBottomInput: (
+        placeholder: string,
+        onSubmit: (value: string) => void,
+      ) => void;
+      bottomInputTimeout?: NodeJS.Timeout;
+    }
+  }
+</script>
