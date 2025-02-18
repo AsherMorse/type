@@ -22,8 +22,10 @@ app.use(cors({
     'Authorization',
     'X-Requested-With',
     'Accept',
-    'Origin'
-  ]
+    'Origin',
+    'Cookie'
+  ],
+  exposedHeaders: ['set-cookie']
 }));
 
 // Public routes

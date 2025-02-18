@@ -47,8 +47,8 @@ ul#notes
             &:hover
                 .name
                     color: var(--color-main-50)
-                // .date
-                //      transform: translateY(-1rem)
+                .storage
+                    opacity: 0.8
 
             &:hover, &:focus-visible
                 .delete
@@ -72,6 +72,15 @@ ul#notes
                 gap: var(--space-m)
                 color: var(--color-main-50)
                 text-wrap: nowrap
+
+                .storage
+                    font-size: var(--font-size-xs)
+                    opacity: 0.5
+                    transition: opacity var(--transition-s)
+
+            &[data-storage="cloud"]
+                .storage
+                    color: var(--color-main)
 
             .delete
                 transition: transform var(--transition-s), opacity var(--transition-s)
