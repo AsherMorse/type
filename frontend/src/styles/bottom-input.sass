@@ -37,11 +37,13 @@
         
       button
         position: absolute
-        right: -10px
-        bottom: -6px
+        right: -70px
+        bottom: -8px
         background: none
         border: none
-        padding: 0.5rem
+        padding: 0.75rem 
+        height: 42px
+        width: 42px
         cursor: pointer
         color: var(--color-main-50)
         transition: color 0.2s ease
@@ -49,12 +51,24 @@
         align-items: center
         justify-content: center
         
+        &::before
+          content: ''
+          position: absolute
+          inset: 0
+          background: color-mix(in hsl, var(--color-background) 50%, transparent)
+          backdrop-filter: blur(50px)
+          -webkit-backdrop-filter: blur(50px)
+          border: 1px solid var(--color-main-05)
+          border-radius: var(--radius-xl)
+          z-index: -1
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08)
+        
         &:hover
           color: var(--color-main)
         
         svg
-          width: 1.2rem
-          height: 1.2rem
+          width: 1.5rem
+          height: 1.5rem
 
     textarea
       width: 100%
