@@ -47,6 +47,11 @@ export const observers = {
             }
           }
         });
+        // Update logged-in-only elements visibility
+        const loggedInOnly = document.querySelectorAll(".logged-in-only");
+        loggedInOnly.forEach((element) => {
+          (element as HTMLElement).hidden = !state.isAuthenticated;
+        });
       } catch (error) {
         console.debug('Auth check failed:', error);
         clearAuthState();

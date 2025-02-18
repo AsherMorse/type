@@ -59,6 +59,7 @@ export function initMenuListeners() {
   menu.fontValueEl.textContent = currentAppearance('font')
   menu.themeValueEl.textContent = currentAppearance('theme')
   menu.spellValueEl.textContent = state.editorEl.spellcheck ? 'on' : 'off'
+  menu.storageValueEl.textContent = state.storageMode
 
   // Change font
   menu.fontEl.addEventListener('click', () => {
@@ -112,4 +113,15 @@ export function initMenuListeners() {
       }
     });
   }
+
+  // Storage toggle
+  menu.storageToggleEl.addEventListener('click', () => {
+    const newMode = state.storageMode === 'local' ? 'cloud' : 'local'
+    state.storageMode = newMode
+    localStorage.setItem('storage-mode', newMode)
+    menu.storageValueEl.textContent = newMode
+    window.showSuccess(`Switched to ${newMode} storage`)
+    menu.showMenuEl.classList.remove('active')
+    window.location.reload()
+  })
 }

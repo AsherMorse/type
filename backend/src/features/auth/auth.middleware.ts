@@ -6,7 +6,16 @@ import { client } from '../../utils/client';
 const account = new Account(client);
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const sessionCookie = req.cookies?.['a_session_type'];
+  // Debug all cookies
+  console.log('All cookies:', req.cookies);
+
+  // Try different possible cookie names
+  const sessionCookie =
+    req.cookies?.['a_session_type'] ||
+    req.cookies?.['a_session'] ||
+    req.cookies?.['appwrite_session'] ||
+    req.cookies?.['session'];
+
   console.log('Session cookie:', sessionCookie);
 
   if (!sessionCookie) {
@@ -16,17 +25,11 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
   try {
     console.log('Setting session...');
-    // Set the session cookie
     client.setSession(sessionCookie);
-
     console.log('Getting user...');
-    // Try to get the user - this will fail if session is invalid
     const user = await account.get();
     console.log('User:', user);
-
-    // Set the user object on the request
     req.user = user;
-
     next();
   } catch (error) {
     console.error('Auth error:', error);
