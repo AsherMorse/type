@@ -55,6 +55,10 @@ import "@styles/bottom-input.sass";
 
 <script>
   // @ts-nocheck
+  import { state } from "@scripts/state";
+  import { updateUserState } from "@scripts/state";
+  import { editorViewCtx, commandsCtx } from "@milkdown/kit/core";
+  import { replaceAll } from "@milkdown/kit/utils";
 
   interface Window {
     currentEditor: any;
@@ -71,24 +75,35 @@ import "@styles/bottom-input.sass";
 
   // AI Assistant functionality
   window.getCurrentNoteContent = function () {
-    const editor = window.currentEditor;
-    if (!editor) return "";
-    return editor.state.doc.toString();
+    if (state.editorVersion === "2") {
+      return state.editor2?.storage.markdown.getMarkdown() || "";
+    }
+    return (
+      state.editor?.action((ctx) =>
+        ctx.get(editorViewCtx).state.doc.toString(),
+      ) || ""
+    );
   };
 
   // @ts-ignore
   window.handleAiCommand = async function (text) {
     try {
-      const response = await fetch(import.meta.env.PUBLIC_API + "/ai/format", {
+      // Check auth state first
+      await updateUserState();
+
+      const response = await fetch(`${import.meta.env.PUBLIC_API}/ai/format`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({
           message: text,
           noteContext: window.getCurrentNoteContent(),
         }),
         credentials: "include",
+        mode: "cors",
       });
 
       if (!response.ok) {
@@ -98,29 +113,41 @@ import "@styles/bottom-input.sass";
 
       const data = await response.json();
 
-      // Get the editor instance
-      // @ts-ignore
-      const editor = window.currentEditor;
-      if (!editor) {
-        throw new Error("No active editor found");
+      // Handle insertion based on editor version
+      if (state.editorVersion === "2") {
+        if (!state.editor2) {
+          throw new Error("No active editor found (v2)");
+        }
+
+        const { selection } = state.editor2.state;
+        const insertionText =
+          (selection.from === selection.$from.start() ? "" : "\n") +
+          data.content +
+          "\n";
+        state.editor2.commands.insertContent(insertionText);
+        state.editor2.commands.focus();
+      } else {
+        if (!state.editor) {
+          throw new Error("No active editor found (v1)");
+        }
+
+        state.editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          const { state } = view;
+          const { from } = state.selection;
+
+          // Add newline if not at start of line
+          const textBefore = state.doc.textBetween(Math.max(0, from - 1), from);
+          const prefix = textBefore === "\n" || from === 0 ? "" : "\n";
+          const insertionText = prefix + data.content + "\n";
+
+          // Use insertText for plain markdown - it will be automatically parsed
+          view.dispatch(state.tr.insertText(insertionText, from));
+          view.focus();
+        });
       }
 
-      // Insert the formatted content at the current cursor position
-      const { state } = editor;
-      const pos = state.selection.main.head;
-
-      // Add a newline before content if we're not at the start of a line
-      const lineStart = state.doc.lineAt(pos).from;
-      const prefix = pos === lineStart ? "" : "\n";
-
-      editor.dispatch({
-        changes: {
-          from: pos,
-          insert: prefix + data.content + "\n",
-        },
-      });
-
-      window.showBottomAlert("Added formatted text", 2000);
+      window.showBottomAlert("Content added", 2000);
     } catch (error) {
       console.error("AI formatting error:", error);
       window.showBottomAlert(error.message || "Failed to format text", 3000);

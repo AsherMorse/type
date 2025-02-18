@@ -45,7 +45,7 @@ app.get('/protected', authMiddleware, (req: Request, res: Response): void => {
 
 // Notes routes
 app.use('/api/notes', authMiddleware, notesRoutes);
-app.use('/api/ai', authMiddleware, aiRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
