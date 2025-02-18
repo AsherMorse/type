@@ -57,8 +57,8 @@ import "@styles/bottom-input.sass";
   // @ts-nocheck
   import { state } from "@scripts/state";
   import { updateUserState } from "@scripts/state";
-  import { editorViewCtx, commandsCtx } from "@milkdown/kit/core";
-  import { replaceAll } from "@milkdown/kit/utils";
+  import { editorViewCtx, commandsCtx, parserCtx } from "@milkdown/kit/core";
+  import { replaceAll, insert } from "@milkdown/kit/utils";
 
   interface Window {
     currentEditor: any;
@@ -119,35 +119,35 @@ import "@styles/bottom-input.sass";
           throw new Error("No active editor found (v2)");
         }
 
-        const { selection } = state.editor2.state;
-        const insertionText =
-          (selection.from === selection.$from.start() ? "" : "\n") +
-          data.content +
-          "\n";
-        state.editor2.commands.insertContent(insertionText);
+        // Replace content with markdown parsing
+        state.editor2.commands.setContent(data.content, true);
         state.editor2.commands.focus();
       } else {
         if (!state.editor) {
           throw new Error("No active editor found (v1)");
         }
 
+        // For Milkdown, use replaceAll to handle markdown content
         state.editor.action((ctx) => {
           const view = ctx.get(editorViewCtx);
-          const { state } = view;
-          const { from } = state.selection;
+          const { state: editorState } = view;
 
-          // Add newline if not at start of line
-          const textBefore = state.doc.textBetween(Math.max(0, from - 1), from);
-          const prefix = textBefore === "\n" || from === 0 ? "" : "\n";
-          const insertionText = prefix + data.content + "\n";
+          // Create a transaction to replace content
+          const tr = editorState.tr.delete(0, editorState.doc.content.size);
 
-          // Use insertText for plain markdown - it will be automatically parsed
-          view.dispatch(state.tr.insertText(insertionText, from));
+          // Parse and insert markdown
+          const parser = ctx.get(parserCtx);
+          const doc = parser(data.content);
+          if (doc) {
+            tr.insert(0, doc);
+          }
+
+          view.dispatch(tr);
           view.focus();
         });
       }
 
-      window.showBottomAlert("Content added", 2000);
+      window.showBottomAlert("Content updated", 2000);
     } catch (error) {
       console.error("AI formatting error:", error);
       window.showBottomAlert(error.message || "Failed to format text", 3000);
