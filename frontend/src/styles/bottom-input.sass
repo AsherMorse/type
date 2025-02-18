@@ -35,10 +35,8 @@
         width: 100%
         padding-right: 2.5rem
         
-      button
+      .side-button
         position: absolute
-        right: -70px
-        bottom: -8px
         background: none
         border: none
         padding: 0.75rem 
@@ -50,6 +48,7 @@
         display: flex
         align-items: center
         justify-content: center
+        bottom: -8px
         
         &::before
           content: ''
@@ -69,6 +68,12 @@
         svg
           width: 1.5rem
           height: 1.5rem
+          
+        &.right
+          right: -70px
+          
+        &.left
+          left: -70px
 
     textarea
       width: 100%
