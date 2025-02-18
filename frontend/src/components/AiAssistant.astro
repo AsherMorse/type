@@ -1,8 +1,76 @@
 <script is:inline>
-  window.handleAiCommand = function (text, format) {
-    // Temporary implementation
-    console.log("AI Assistant received:", text);
-    console.log("With format:", format);
-    window.showSuccess(`Added ${format} formatted text`, 2000);
-  };
+  // Initialize AI Assistant immediately
+  (function initAiAssistant() {
+    // Get the current note content from the editor
+    window.getCurrentNoteContent = function () {
+      const editor = window.currentEditor;
+      if (!editor) return "";
+      return editor.state.doc.toString();
+    };
+
+    // Show success/error messages using the bottom alert
+    window.showSuccess = function (message) {
+      window.showBottomAlert(message, 2000);
+    };
+
+    window.showError = function (message) {
+      window.showBottomAlert(message, 3000);
+    };
+
+    window.handleAiCommand = async function (text) {
+      try {
+        const response = await fetch(
+          import.meta.env.PUBLIC_API_URL + "/ai/format",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message: text,
+              noteContext: window.getCurrentNoteContent(),
+            }),
+            credentials: "include",
+          },
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to format text");
+        }
+
+        const data = await response.json();
+
+        // Get the editor instance
+        const editor = window.currentEditor;
+        if (!editor) {
+          throw new Error("No active editor found");
+        }
+
+        // Insert the formatted content at the current cursor position
+        const { state } = editor;
+        const pos = state.selection.main.head;
+
+        // Add a newline before content if we're not at the start of a line
+        const lineStart = state.doc.lineAt(pos).from;
+        const prefix = pos === lineStart ? "" : "\n";
+
+        editor.dispatch({
+          changes: {
+            from: pos,
+            insert: prefix + data.content + "\n",
+          },
+        });
+
+        window.showSuccess("Added formatted text");
+      } catch (error) {
+        console.error("AI formatting error:", error);
+        window.showError(error.message || "Failed to format text");
+      }
+    };
+
+    // Signal that AI Assistant is ready
+    window.aiAssistantReady = true;
+    console.log("AI Assistant initialized");
+  })();
 </script>

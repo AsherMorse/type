@@ -54,6 +54,79 @@ import "@styles/bottom-input.sass";
 </div>
 
 <script>
+  // @ts-nocheck
+
+  interface Window {
+    currentEditor: any;
+    getCurrentNoteContent: () => string;
+    handleAiCommand: (text: string) => Promise<void>;
+    showBottomInput: (
+      placeholder: string,
+      onSubmit: (value: string) => void,
+    ) => void;
+    bottomInputTimeout: number;
+    handleButtonClick: (button: HTMLElement) => void;
+    showBottomAlert: (message: string, duration?: number) => void;
+  }
+
+  // AI Assistant functionality
+  window.getCurrentNoteContent = function () {
+    const editor = window.currentEditor;
+    if (!editor) return "";
+    return editor.state.doc.toString();
+  };
+
+  // @ts-ignore
+  window.handleAiCommand = async function (text) {
+    try {
+      const response = await fetch(import.meta.env.PUBLIC_API + "/ai/format", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: text,
+          noteContext: window.getCurrentNoteContent(),
+        }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to format text");
+      }
+
+      const data = await response.json();
+
+      // Get the editor instance
+      // @ts-ignore
+      const editor = window.currentEditor;
+      if (!editor) {
+        throw new Error("No active editor found");
+      }
+
+      // Insert the formatted content at the current cursor position
+      const { state } = editor;
+      const pos = state.selection.main.head;
+
+      // Add a newline before content if we're not at the start of a line
+      const lineStart = state.doc.lineAt(pos).from;
+      const prefix = pos === lineStart ? "" : "\n";
+
+      editor.dispatch({
+        changes: {
+          from: pos,
+          insert: prefix + data.content + "\n",
+        },
+      });
+
+      window.showBottomAlert("Added formatted text", 2000);
+    } catch (error) {
+      console.error("AI formatting error:", error);
+      window.showBottomAlert(error.message || "Failed to format text", 3000);
+    }
+  };
+
   // Track if input is shown to prevent multiple instances
   let isInputShown = false;
 
@@ -62,21 +135,11 @@ import "@styles/bottom-input.sass";
     e.preventDefault();
     const formEl = e.target as HTMLFormElement;
     const inputEl = formEl.querySelector("textarea") as HTMLTextAreaElement;
-    const format = window.getSelectedFormat();
     const value = inputEl.value;
 
     if (!value.trim()) return;
 
-    if (!format) {
-      window.showBottomAlert("Please select a format first!");
-      // Flash the format button to draw attention
-      const formatButton = document.querySelector(".side-button.left");
-      formatButton?.classList.add("flash");
-      setTimeout(() => formatButton?.classList.remove("flash"), 1000);
-      return;
-    }
-
-    window.handleAiCommand(value, format);
+    window.handleAiCommand(value);
     inputEl.value = ""; // Clear the input
   };
 
@@ -87,7 +150,7 @@ import "@styles/bottom-input.sass";
   // Initialize the global function
   window.showBottomInput = function (
     placeholder = "Enter text...",
-    onSubmit: (value: string, format: string | null) => void,
+    onSubmit: (value: string) => void,
   ) {
     if (isInputShown) return;
     isInputShown = true;
@@ -124,12 +187,10 @@ import "@styles/bottom-input.sass";
     // Handle submit
     const handleSubmit = (e: Event) => {
       e.preventDefault();
-      const format = window.getSelectedFormat();
       const value = inputEl.value;
       if (onSubmit && value.trim()) {
         // Only submit if there's content
-        console.log("Submitting with format:", format);
-        onSubmit(value, format);
+        onSubmit(value);
       }
       inputEl.value = ""; // Clear the input
       bottomInputEl.classList.remove("show");
@@ -178,12 +239,8 @@ import "@styles/bottom-input.sass";
     // Check for Cmd/Ctrl + K
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
       e.preventDefault(); // Prevent default browser behavior
-      window.showBottomInput("Type a command...", (value, format) => {
-        console.log("Command entered:", value);
-        console.log("Selected format:", format);
-        if (format) {
-          console.log(`Applying ${format} format to: "${value}"`);
-        }
+      window.showBottomInput("Type a command...", (value) => {
+        window.handleAiCommand(value);
       });
     }
   });
@@ -195,19 +252,6 @@ import "@styles/bottom-input.sass";
       formEl.dispatchEvent(event);
     }
   };
-
-  // Update type declaration
-  declare global {
-    interface Window {
-      showBottomInput: (
-        placeholder: string,
-        onSubmit: (value: string, format: string | null) => void,
-      ) => void;
-      bottomInputTimeout?: NodeJS.Timeout;
-      handleButtonClick: (button: HTMLElement) => void;
-      handleAiCommand: (text: string, format: string | null) => void;
-    }
-  }
 
   // Add input content check
   const textarea = document.querySelector(
