@@ -1,6 +1,7 @@
 ---
 import Fonts from "@components/utils/Fonts.astro";
 import "@styles/global.sass";
+import BottomInput from "@components/BottomInput.astro";
 
 const defaultTitle = "type.";
 const {
@@ -78,5 +79,6 @@ const base = Astro.url.pathname.endsWith("/")
   <body class={className}>
     <!-- <h1 class="page-heading">Zen-editor for just typing</h1> -->
     <slot />
+    <BottomInput />
   </body>
 </html>
