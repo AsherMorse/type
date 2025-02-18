@@ -95,8 +95,8 @@ function renderNotes(notes = state.notes) {
     noteButtonEl.dataset.id = note.id
     noteButtonEl.dataset.storage = note.author === 'type.local' ? 'local' : 'cloud'
 
-    noteRightEl.appendChild(noteStorageEl)
     noteRightEl.appendChild(noteDelEl)
+    noteRightEl.appendChild(noteStorageEl)
     noteRightEl.appendChild(noteDateEl)
     noteButtonEl.appendChild(noteNameEl)
     noteButtonEl.appendChild(noteRightEl)
