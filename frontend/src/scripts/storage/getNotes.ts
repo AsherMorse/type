@@ -2,17 +2,26 @@ import { state } from '@scripts/state'
 import { storage } from '@scripts/appwrite/storage'
 import { client } from '@scripts/appwrite/client'
 import { databases } from '@scripts/appwrite/client'
+import { Query } from 'appwrite'
 
 export async function getNotes(opfs: FileSystemDirectoryHandle = null) {
   if (!opfs) return []
 
   // Get notes based on storage mode
   console.log('Getting notes with mode:', state.storageMode, 'isAuthenticated:', state.isAuthenticated)
+  let notes = []
   if (state.storageMode === 'cloud' && state.isAuthenticated) {
-    return await getCloudNotes()
+    notes = await getCloudNotes()
   } else {
-    return await getLocalNotes(opfs)
+    notes = await getLocalNotes(opfs)
   }
+
+  // Filter notes by current user if in cloud mode
+  if (state.storageMode === 'cloud' && state.isAuthenticated) {
+    notes = notes.filter(note => note.userId === state.currentUser.$id)
+  }
+
+  return notes
 }
 
 export async function getLocalNotes(opfs: FileSystemDirectoryHandle) {
@@ -47,9 +56,7 @@ async function getCloudNotes() {
     const response = await databases.listDocuments(
       'main',  // database ID
       'notes', // collection ID
-      [
-        // Add any query parameters if needed
-      ]
+      []  // No filters at database level
     )
 
     console.log('Raw API response:', response)
@@ -59,7 +66,8 @@ async function getCloudNotes() {
       name: doc.content.slice(0, 50) || 'Empty note',
       content: doc.content,
       author: 'type.cloud',
-      modified: new Date(doc.lastModified)
+      modified: new Date(doc.lastModified),
+      userId: doc.userId  // Make sure to include userId in the note object
     }))
     console.log('Processed notes:', notes)
     return notes
